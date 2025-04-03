@@ -21,6 +21,8 @@ export default function Home() {
     setTask("");
   };
 
+
+  
   const handleEditTask = (index) => {
     setTask(tasks[index]);
     setEditingIndex(index);
