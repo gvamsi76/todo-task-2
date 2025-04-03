@@ -1,91 +1,72 @@
-import React, { useEffect, useState } from 'react'
-import { Button, ListGroup } from 'react-bootstrap'
+import { useState } from "react";
+import { Button, Card, Form, Container, Row, Col } from "react-bootstrap";
 
-function Home() {
-    const [task, setTask] = useState('')
-    const [todos, setTodos] = useState([])
-    const [edit, setEdit] = useState(null)
 
-    console.log(todos, task)
 
-    const addTodo = () => {
+export default function Home() {
+  const [tasks, setTasks] = useState([]);
+  const [task, setTask] = useState("");
+  const [editingIndex, setEditingIndex] = useState(null);
 
-        if (task?.trim() === '') return
-        if (edit) {
-            setTodos(todos?.map(item => item?.id === edit ? { ...todos } : todos))
-            setEdit(null)
-        } else {
-            setTodos([...todos, { id: Date.now(), text: task }])
-        }
-        setTask('')
+  const handleAddTask = () => {
+    if (task.trim() === "") return;
+    if (editingIndex !== null) {
+      const updatedTasks = [...tasks];
+      updatedTasks[editingIndex] = task;
+      setTasks(updatedTasks);
+      setEditingIndex(null);
+    } else {
+      setTasks([...tasks, task]);
     }
+    setTask("");
+  };
 
+  const handleEditTask = (index) => {
+    setTask(tasks[index]);
+    setEditingIndex(index);
+  };
 
-    const editTodo = (id) => {
+  const handleDeleteTask = (index) => {
+    setTasks(tasks.filter((_, i) => i !== index));
+  };
 
-        const todoEdit = todos.find(item => item?.id === id)
-        setTask(todoEdit.text)
-        setEdit(id)
-    }
-    const deleteTodo = (id) => {
-        setTodos(todos?.filter(item => item?.id !== id))
-    }
-
-    useEffect(() => {
-        const TodoStore = JSON.parse(localStorage.getItem("todos")) || []
-        setTodos(TodoStore)
-    }, [])
-
-    useEffect(() => {
-        localStorage.setItem("todos", JSON.stringify(todos))
-    }, [])
-    return (
-        <>
-            <div className='max-w'>
-                <input type='text' placeholder='Enter a Task' value={task} onChange={(e) => setTask(e.target.value)} />
-                <Button onClick={addTodo} >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-plus-lg" viewBox="0 0 16 16">
-                        <path fillRule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
-                    </svg>
-                    {edit !== null ? "update" : "Create"}</Button>
-            </div>
-            <div className='space-y-2'>
-                {todos?.map((item, index) => {
-                    return (
-                        <>
-                           
-            
-                            <ListGroup>
-                                <ListGroup.Item> 
-                                    <div className='d-flex justify-content-between'> 
-
-                                    <span >{item?.text}</span> 
-                                    
-                                    <Button onClick={() => editTodo(item?.id)}>
-                                        
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil-square" viewBox="0 0 16 16">
+  return (
+    <Container className="mt-4">
+      <h1 className="text-center">Todo List</h1>
+      <Row className="mb-3">
+        <Col md={8}>
+          <Form.Control value={task} onChange={(e) => setTask(e.target.value)} placeholder="Enter task..." />
+        </Col>
+        <Col md={4}>
+          <Button variant={editingIndex !== null ? "warning" : "primary"} onClick={handleAddTask}>
+            {editingIndex !== null ? "Update" : "Add"}
+          </Button>
+        </Col>
+      </Row>
+      <Row>
+        {tasks.map((t, index) => (
+          <Col md={12} key={index} className="mb-2">
+            <Card>
+              <Card.Body className="d-flex justify-content-between align-items-center">
+                <span>{t}</span>
+                <div>
+                  <Button variant="outline-secondary" size="sm" onClick={() => handleEditTask(index)} className="me-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil-square" viewBox="0 0 16 16">
                                         <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                                         <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
                                     </svg>
-                                    
-                                    Edit
-                                </Button>
-                                    <Button onClick={() => deleteTodo(item?.id)}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash3" viewBox="0 0 16 16">
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => handleDeleteTask(index)}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash3" viewBox="0 0 16 16">
                                             <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
-                                        </svg>  Delete
-                                    </Button>
-                                    </div>
-                                    </ListGroup.Item>
-
-                            </ListGroup>
-                        </>
-
-                    )
-                })}
-            </div>
-        </>
-    )
+                                        </svg> 
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </Container>
+  );
 }
-
-export default Home
